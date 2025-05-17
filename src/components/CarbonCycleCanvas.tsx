@@ -10,7 +10,7 @@ import FarmModel from "./Farm";
 import ForestModel from "./Forest";
 import FactoryModel from "./Factory";
 import VolcanoModel from "./Volcano";
-import { div } from "three/tsl";
+import { Button } from "./ui/Button";
 
 function CurvedArrow({
   from,
@@ -113,8 +113,9 @@ export default function CarbonCycleCanvas() {
         <p>• Use mouse to rotate view</p>
         <p>• Use scroll to zoom</p>
         <div className="flex gap-2 items-center justify-between mt-2">
-          <button onClick={() => setShowArrows((prev) => !prev)}>{showArrows ? "Hide Arrows" : "Show Arrows"}</button>
-          <button onClick={() => setShowSidebar(false)}>Hide Instructions</button>
+          <Button onClick={() => setShowArrows((prev) => !prev)}>{showArrows ? "Hide Arrows" : "Show Arrows"}</Button>
+          {/* <button onClick={() => setShowSidebar(false)}>Hide Instructions</button> */}
+          <Button onClick={() => setShowSidebar(false)}>Hide Instructions</Button>
         </div>
       </div>
 
