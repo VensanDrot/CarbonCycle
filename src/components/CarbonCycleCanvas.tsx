@@ -97,6 +97,7 @@ export default function CarbonCycleCanvas() {
 
   const [showSidebar, setShowSidebar] = useState(true);
   const [showArrows, setShowArrows] = useState(true);
+  const [showLabels, setShowLabels] = useState(true);
 
   return (
     <div className="flex w-fit mx-auto inset-0 h-full items-center justify-center relative overflow-hidden">
@@ -116,6 +117,10 @@ export default function CarbonCycleCanvas() {
           <Button onClick={() => setShowArrows((prev) => !prev)}>{showArrows ? "Hide Arrows" : "Show Arrows"}</Button>
           {/* <button onClick={() => setShowSidebar(false)}>Hide Instructions</button> */}
           <Button onClick={() => setShowSidebar(false)}>Hide Instructions</Button>
+        </div>
+
+        <div className="flex gap-2 items-center justify-between mt-2">
+          <Button onClick={() => setShowLabels((prev) => !prev)}>{showLabels ? "Hide Labels" : "Show Labels"}</Button>
         </div>
       </div>
 
@@ -185,7 +190,9 @@ export default function CarbonCycleCanvas() {
 
         {/* imported models */}
         <FactoryModel scale={0.43} position={factoryPosition.toArray()} rotation={[0, 3.14 / 1.05, 0]} />
+
         <ForestModel scale={0.23} position={forestPosition.toArray()} />
+
         <FarmModel scale={0.15} />
 
         {/* farm ground */}
@@ -224,7 +231,7 @@ export default function CarbonCycleCanvas() {
               label="Factory Emissions (Fossil Fuels and CO2)"
             />
             <CurvedArrow from={forestPosition} to={ground} color="brown" label="Dead Plants Decompose into Soil" />
-            <CurvedArrow from={ground} to={atmosphere} color="#444" label="Decomposition Releases CO2" />
+            <CurvedArrow from={ground} to={atmosphere} color="#fff" label="Decomposition Releases CO2" />
             <CurvedArrow from={waterPosition2} to={atmosphere} color="lightblue" label="Ocean Releases CO2" />
             <CurvedArrow from={farmPosition} to={ground} color="saddlebrown" label="Animal Waste Decomposes" />
             <CurvedArrow
@@ -236,19 +243,48 @@ export default function CarbonCycleCanvas() {
           </>
         )}
 
+        {showLabels && (
+          <>
+            <Billboard>
+              <Text position={[0, 3.5, 0]} fontSize={0.5} color="#0077be" anchorX="center" anchorY="middle">
+                Atmosphere
+              </Text>
+            </Billboard>
+
+            <Billboard position={waterPosition.clone().add(new THREE.Vector3(0, 3, 0))}>
+              <Text fontSize={0.3}>Ocean</Text>
+            </Billboard>
+
+            <Billboard position={sunPosition.clone().add(new THREE.Vector3(0, 1, 0))}>
+              <Text fontSize={0.3}>Sun</Text>
+            </Billboard>
+
+            <Billboard position={farmPosition.clone().add(new THREE.Vector3(0, 2, 0))}>
+              <Text fontSize={0.3}>Farm</Text>
+            </Billboard>
+
+            <Billboard position={forestPosition.clone().add(new THREE.Vector3(0, 2, 0))}>
+              <Text fontSize={0.3}>Forest</Text>
+            </Billboard>
+
+            <Billboard position={factoryPosition.clone().add(new THREE.Vector3(0, 2, 0))}>
+              <Text fontSize={0.3}>Factory</Text>
+            </Billboard>
+
+            <Billboard position={volcanoPosition.clone().add(new THREE.Vector3(0, 6, 0))}>
+              <Text fontSize={0.5}>Volcano</Text>
+            </Billboard>
+          </>
+        )}
+
         {/* label for atmosphere */}
-        <Billboard>
-          <Text position={[0, 3.5, 0]} fontSize={0.5} color="#0077be" anchorX="center" anchorY="middle">
-            Atmosphere
-          </Text>
-        </Billboard>
 
         <OrbitControls
           enablePan={false}
           enableZoom={true}
           minPolarAngle={0}
           maxPolarAngle={Math.PI / 2}
-          maxDistance={19}
+          maxDistance={25}
           makeDefault
         />
       </Canvas>
