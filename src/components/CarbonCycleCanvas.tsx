@@ -1,9 +1,24 @@
 "use client";
 
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Stars, Text } from "@react-three/drei";
-import { useRef } from "react";
+import { OrbitControls, Stars, Text, useGLTF } from "@react-three/drei";
+import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
+import { Group } from "three";
+
+export function CowModel({ position = [0, 0, 0] }: { position?: [number, number, number] }) {
+  const { scene } = useGLTF("/models/minecraft_cow.glb");
+  const [cloned, setCloned] = useState<Group | null>(null);
+
+  useEffect(() => {
+    const clone = scene.clone(true); // deep clone
+    setCloned(clone);
+  }, [scene]);
+
+  if (!cloned) return null;
+
+  return <primitive object={cloned} position={position} scale={0.02} />;
+}
 
 function CarbonArrow({ from, to, color = "cyan" }: { from: THREE.Vector3; to: THREE.Vector3; color?: string }) {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -45,6 +60,15 @@ function Cow({ position }: { position: [number, number, number] }) {
   );
 }
 
+function Fence({ position }: { position: [number, number, number] }) {
+  return (
+    <mesh position={position}>
+      <boxGeometry args={[0.05, 0.4, 1]} />
+      <meshStandardMaterial color="#8B4513" />
+    </mesh>
+  );
+}
+
 export default function CarbonCycleCanvas() {
   const atmosphere = new THREE.Vector3(0, 2.5, 0);
   const biosphere = new THREE.Vector3(0, -2.5, 0);
@@ -66,7 +90,7 @@ export default function CarbonCycleCanvas() {
     >
       <ambientLight intensity={0.8} />
       <directionalLight position={[5, 5, 5]} intensity={1.5} />
-      <Stars radius={50} depth={40} count={2000} factor={4} saturation={0} fade />
+      {/* <Stars radius={50} depth={40} count={2000} factor={4} saturation={0} fade /> */}
 
       {/* Sun */}
       <mesh position={sunPosition}>
@@ -76,14 +100,13 @@ export default function CarbonCycleCanvas() {
 
       {/* Earth Ground */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1, 0]}>
-        <circleGeometry args={[6, 64]} />
+        <circleGeometry args={[8, 64]} />
         <meshStandardMaterial color="#2f4f2f" side={THREE.DoubleSide} />
       </mesh>
 
-      {/* Ocean */}
+      {/* Ocean (rounded shape) */}
       <mesh position={[-3.5, -0.99, 0]} rotation={[-Math.PI / 2, 0, 0]}>
-        {/* <planeGeometry args={[3.5, 2.5]} /> */}
-        <circleGeometry args={[2]} />
+        <circleGeometry args={[2, 32]} />
         <meshStandardMaterial color="#1ca3ec" transparent opacity={0.8} />
       </mesh>
 
@@ -93,7 +116,6 @@ export default function CarbonCycleCanvas() {
           <boxGeometry args={[0.6, 0.6, 0.6]} />
           <meshStandardMaterial color="gray" />
         </mesh>
-        {/* Factory Smoke */}
         {[...Array(3)].map((_, i) => (
           <mesh key={i} position={[0, 0.5 + i * 0.3, 0]}>
             <coneGeometry args={[0.1, 0.2, 6]} />
@@ -103,8 +125,8 @@ export default function CarbonCycleCanvas() {
       </group>
 
       {/* Tree cluster */}
-      {[-1.2, -0.6, 0, -0.5, -0.34].map((x, i) => (
-        <group position={[x, -1, Math.floor(Math.random() * (0.9 - 0 + 1) + 0)]} key={i}>
+      {[-1.2, -0.6, 0].map((x, i) => (
+        <group position={[x, -1, 0.5]} key={i}>
           <mesh position={[0, 0.25, 0]}>
             <cylinderGeometry args={[0.1, 0.1, 0.5]} />
             <meshStandardMaterial color="saddlebrown" />
@@ -117,14 +139,23 @@ export default function CarbonCycleCanvas() {
       ))}
 
       {/* Farm area */}
-      <mesh position={[1.5, -0.99, 0.5]} rotation={[-Math.PI / 2, 0, 0]}>
-        <planeGeometry args={[2, 1]} />
+      <mesh position={[1.5, -0.99, -3]} rotation={[-Math.PI / 2, 0, 0]}>
+        <planeGeometry args={[3, 3]} />
         <meshStandardMaterial color="#d2b48c" />
       </mesh>
 
+      {/* Farm fence */}
+      {[1, 2].map((x, i) => (
+        <Fence key={"fence-x" + i} position={[x, -0.8, 0]} />
+      ))}
+      {[0, 1].map((z, i) => (
+        <Fence key={"fence-z" + i} position={[2, -0.8, z]} />
+      ))}
+
       {/* Cows inside the farm */}
       {[1.2, 1.5, 1.8].map((x, i) => (
-        <Cow key={i} position={[x, -0.85, 0.5]} />
+        // <Cow key={i} position={[x, -0.85, -3]} />
+        <CowModel key={i} position={[x, -0.7, -3]} />
       ))}
 
       {/* Arrows */}
@@ -151,7 +182,17 @@ export default function CarbonCycleCanvas() {
         Sun
       </Text>
 
-      <OrbitControls enablePan={false} enableZoom={true} />
+      {/* <OrbitControls enablePan={false} enableZoom={true} /> */}
+      <OrbitControls
+        enablePan={false}
+        enableZoom={true}
+        minPolarAngle={0} // Allows looking straight up (zenith)
+        maxPolarAngle={Math.PI / 2} // Prevents looking below the horizontal plane
+        // minAzimuthAngle={-Infinity} // Default, allows full 360 horizontal rotation
+        // maxAzimuthAngle={Infinity}  // Default, allows full 360 horizontal rotation
+      />
     </Canvas>
   );
 }
+
+useGLTF.preload("/models/minecraft_cow.glb");
