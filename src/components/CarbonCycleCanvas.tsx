@@ -2,7 +2,7 @@
 
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, Text, useGLTF, Line, Billboard } from "@react-three/drei";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import * as THREE from "three";
 import { Group } from "three";
 import Fence from "./Fence";
@@ -51,7 +51,7 @@ function CurvedArrow({
       />
       {hovered && label && (
         <group ref={groupRef} position={curve.getPoint(0.5).clone().add(new THREE.Vector3(0, -0.7, 0))}>
-          {label.split(/\\n|\n/).map((line, i, arr) => (
+          {label.split(/\n|\n/).map((line, i, arr) => (
             <Text
               key={i}
               position={[0, (arr.length - 1) * 0.25 - i * 0.5, 0]}
@@ -74,8 +74,10 @@ export default function CarbonCycleCanvas() {
   const forestPosition = new THREE.Vector3(-4, -0.88, -2.7);
   const farmPosition = new THREE.Vector3(1.5, -0.88, -3);
   const waterPosition = new THREE.Vector3(-4, -0.99, 3);
+  const waterPosition2 = new THREE.Vector3(-3, -0.99, 2);
   const factoryPosition = new THREE.Vector3(5, -0.9, 2.5);
-  const atmosphere = new THREE.Vector3(0, 2.5, 0);
+  const atmosphere = new THREE.Vector3(0, 4, 0);
+  const ground = new THREE.Vector3(0, -1, 0);
 
   return (
     <Canvas
@@ -146,6 +148,12 @@ export default function CarbonCycleCanvas() {
         color="red"
         label="Factory Emissions (Fossil Fuels and CO2)"
       />
+
+      {/* Additional Arrows for Completion */}
+      <CurvedArrow from={forestPosition} to={ground} color="brown" label="Dead Plants Decompose into Soil" />
+      <CurvedArrow from={ground} to={atmosphere} color="#444" label="Decomposition Releases CO2" />
+      <CurvedArrow from={waterPosition2} to={atmosphere} color="darkblue" label="Ocean Releases CO2" />
+      <CurvedArrow from={farmPosition} to={ground} color="saddlebrown" label="Animal Waste Decomposes" />
 
       <OrbitControls enablePan={false} enableZoom={true} minPolarAngle={0} maxPolarAngle={Math.PI / 2} />
     </Canvas>
