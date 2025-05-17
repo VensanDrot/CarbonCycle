@@ -5,92 +5,11 @@ import { OrbitControls, Stars, Text, useGLTF } from "@react-three/drei";
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { Group } from "three";
-
-const Fence = ({
-  position = [0, 0, 0],
-  length = 1,
-  rotation = [0, 0, 0],
-}: {
-  position?: [number, number, number];
-  length?: number;
-  rotation?: [number, number, number];
-}) => {
-  const postSpacing = 0.5;
-  const numPosts = Math.floor(length / postSpacing) + 1;
-
-  return (
-    <group position={position} rotation={rotation}>
-      {/* Vertical posts */}
-      {Array.from({ length: numPosts }).map((_, i) => (
-        <mesh key={`post-${i}`} position={[i * postSpacing, 0, 0]}>
-          <boxGeometry args={[0.05, 0.4, 0.05]} />
-          <meshStandardMaterial color="#8B4513" />
-        </mesh>
-      ))}
-
-      {/* Top rail */}
-      <mesh position={[length / 2, 0.2, 0]}>
-        <boxGeometry args={[length, 0.05, 0.05]} />
-        <meshStandardMaterial color="#8B4513" />
-      </mesh>
-
-      {/* Bottom rail */}
-      <mesh position={[length / 2, 0.05, 0]}>
-        <boxGeometry args={[length, 0.05, 0.05]} />
-        <meshStandardMaterial color="#8B4513" />
-      </mesh>
-    </group>
-  );
-};
-
-export function CowModel({ initialPosition = [0, 0, 0] }: { initialPosition?: [number, number, number] }) {
-  const { scene } = useGLTF("/models/minecraft_cow.glb");
-  const [position, setPosition] = useState<THREE.Vector3>(new THREE.Vector3(...initialPosition));
-  const [direction, setDirection] = useState<THREE.Vector3>(
-    new THREE.Vector3((Math.random() - 0.5) * 0.01, 0, (Math.random() - 0.5) * 0.01)
-  );
-  const groupRef = useRef<Group>(null);
-
-  useEffect(() => {
-    const clone = scene.clone(true);
-    groupRef.current?.add(clone);
-  }, [scene]);
-
-  useFrame(() => {
-    // Move cow
-    position.add(direction);
-
-    // Bounce off boundaries
-    if (position.x < 0.2 || position.x > 2.8) direction.x *= -1;
-    if (position.z < -4.3 || position.z > -1.7) direction.z *= -1;
-
-    // Occasionally change direction randomly
-    if (Math.random() < 0.01) {
-      direction.set((Math.random() - 0.5) * 0.01, 0, (Math.random() - 0.5) * 0.002);
-    }
-
-    // Rotate to face movement direction
-    const angle = Math.atan2(direction.x, direction.z);
-    if (groupRef.current) {
-      groupRef.current.position.copy(position);
-      groupRef.current.rotation.y = angle;
-    }
-  });
-
-  return <group ref={groupRef} scale={0.015} />;
-}
-
-function FarmModel({
-  position = [1.5, -0.88, -5.7],
-  scale = 1,
-}: {
-  position?: [number, number, number];
-  scale?: number;
-}) {
-  const { scene } = useGLTF("/models/farm_low_poly.glb");
-
-  return <primitive object={scene} position={position} scale={scale} />;
-}
+import Fence from "./Fence";
+import CowModel from "./Cows";
+import FarmModel from "./Farm";
+import ForestModel from "./Forest";
+import FactoryModel from "./Factory";
 
 function CarbonArrow({ from, to, color = "cyan" }: { from: THREE.Vector3; to: THREE.Vector3; color?: string }) {
   const meshRef = useRef<THREE.Mesh>(null);
@@ -114,21 +33,6 @@ function CarbonArrow({ from, to, color = "cyan" }: { from: THREE.Vector3; to: TH
       <cylinderGeometry args={[0.03, 0.03, length, 8]} />
       <meshStandardMaterial color={color} emissive={color} />
     </mesh>
-  );
-}
-
-function Cow({ position }: { position: [number, number, number] }) {
-  return (
-    <group position={position}>
-      <mesh position={[0, 0.15, 0]}>
-        <boxGeometry args={[0.5, 0.3, 0.2]} />
-        <meshStandardMaterial color="white" />
-      </mesh>
-      <mesh position={[0.2, 0.3, 0]}>
-        <sphereGeometry args={[0.1, 8, 8]} />
-        <meshStandardMaterial color="black" />
-      </mesh>
-    </group>
   );
 }
 
@@ -173,33 +77,9 @@ export default function CarbonCycleCanvas() {
         <meshStandardMaterial color="#1ca3ec" transparent opacity={0.8} />
       </mesh>
 
-      {/* Factory block */}
-      <group position={[3.5, -1, 0]}>
-        <mesh>
-          <boxGeometry args={[0.6, 0.6, 0.6]} />
-          <meshStandardMaterial color="gray" />
-        </mesh>
-        {[...Array(3)].map((_, i) => (
-          <mesh key={i} position={[0, 0.5 + i * 0.3, 0]}>
-            <coneGeometry args={[0.1, 0.2, 6]} />
-            <meshStandardMaterial color="#aaaaaa" transparent opacity={0.6} />
-          </mesh>
-        ))}
-      </group>
+      <FactoryModel scale={0.23} position={[5, -0.9, 2.5]} rotation={[0, 3.14 / 1.05, 0]} />
 
-      {/* Tree cluster */}
-      {[-1.2, -0.6, 0].map((x, i) => (
-        <group position={[x, -1, 0.5]} key={i}>
-          <mesh position={[0, 0.25, 0]}>
-            <cylinderGeometry args={[0.1, 0.1, 0.5]} />
-            <meshStandardMaterial color="saddlebrown" />
-          </mesh>
-          <mesh position={[0, 0.75, 0]}>
-            <coneGeometry args={[0.4, 0.7, 8]} />
-            <meshStandardMaterial color="forestgreen" />
-          </mesh>
-        </group>
-      ))}
+      <ForestModel scale={0.23} position={[-3, -0.9, -4.5]} />
 
       <FarmModel scale={0.15} />
 
@@ -257,4 +137,6 @@ export default function CarbonCycleCanvas() {
 }
 
 useGLTF.preload("/models/minecraft_cow.glb");
+useGLTF.preload("/models/camp_forest.glb");
 useGLTF.preload("/models/farm_low_poly.glb");
+useGLTF.preload("/models/low_poly_factory.glb");
