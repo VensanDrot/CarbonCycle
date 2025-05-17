@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Text, useGLTF } from "@react-three/drei";
+import { OrbitControls, Text, useGLTF, Line, Billboard } from "@react-three/drei";
 import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { Group } from "three";
@@ -10,7 +10,6 @@ import CowModel from "./Cows";
 import FarmModel from "./Farm";
 import ForestModel from "./Forest";
 import FactoryModel from "./Factory";
-import { Billboard } from "@react-three/drei";
 
 function CurvedArrow({
   from,
@@ -30,11 +29,8 @@ function CurvedArrow({
   );
 
   const points = curve.getPoints(50);
-  const geometry = new THREE.BufferGeometry().setFromPoints(points);
-
   const meshRef = useRef<THREE.Line>(null);
   const [hovered, setHovered] = useState(false);
-
   const groupRef = useRef<THREE.Group>(null);
 
   useFrame(({ camera }) => {
@@ -45,23 +41,16 @@ function CurvedArrow({
 
   return (
     <>
-      <line
+      <Line
         ref={meshRef as React.RefObject<any>}
-        geometry={geometry}
+        points={points}
+        color={color}
+        lineWidth={2}
         onPointerOver={() => setHovered(true)}
         onPointerOut={() => setHovered(false)}
-      >
-        <lineBasicMaterial attach="material" color={color} linewidth={2} />
-      </line>
-      {/* {hovered && label && (
-        <Billboard position={curve.getPoint(0.3)}>
-          <Text fontSize={0.3} color={color} anchorX="center" anchorY="middle">
-            {label}
-          </Text>
-        </Billboard>
-      )} */}
+      />
       {hovered && label && (
-        <group ref={groupRef} position={curve.getPoint(0.5).clone().add(new THREE.Vector3(0, -0.75, 0))}>
+        <group ref={groupRef} position={curve.getPoint(0.5).clone().add(new THREE.Vector3(0, -0.5, 0))}>
           {label.split(/\\n|\n/).map((line, i, arr) => (
             <Text
               key={i}
@@ -146,16 +135,16 @@ export default function CarbonCycleCanvas() {
         from={sunPosition}
         to={forestPosition}
         color="orange"
-        label="Photosynthesis \n (Energy transfered from Sun to Plants)"
+        label={"Photosynthesis\n(Energy transferred from Sun to Plants)"}
       />
-      <CurvedArrow from={atmosphere} to={forestPosition} color="green" label="CO2 gets absorbed by Plants" />
+      <CurvedArrow from={atmosphere} to={forestPosition} color="green" label="CO₂ gets absorbed by Plants" />
       <CurvedArrow from={farmPosition} to={atmosphere} color="gray" label="Plant & Animal Respiration" />
-      <CurvedArrow from={atmosphere} to={waterPosition} color="blue" label="Ocean absorbs CO2" />
+      <CurvedArrow from={atmosphere} to={waterPosition} color="blue" label="Ocean absorbs CO₂" />
       <CurvedArrow
         from={factoryPosition}
         to={atmosphere}
         color="red"
-        label="Factory Emissions (Fossil Fuels and CO2)"
+        label="Factory Emissions (Fossil Fuels and CO₂)"
       />
 
       <OrbitControls enablePan={false} enableZoom={true} minPolarAngle={0} maxPolarAngle={Math.PI / 2} />
