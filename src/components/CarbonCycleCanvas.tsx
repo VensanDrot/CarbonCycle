@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Text, useGLTF, Line } from "@react-three/drei";
+import { OrbitControls, Text, useGLTF, Line, Billboard, Sky, Environment } from "@react-three/drei";
 import { useRef, useState } from "react";
 import * as THREE from "three";
 import { Group } from "three";
@@ -104,6 +104,7 @@ export default function CarbonCycleCanvas() {
         borderRadius: "15px",
         background: "#d0f0ff",
       }}
+      camera={{ position: [10, 10, 10], fov: 45 }}
     >
       <ambientLight intensity={0.8} />
       <directionalLight position={[5, 5, 5]} intensity={1.5} />
@@ -114,9 +115,17 @@ export default function CarbonCycleCanvas() {
         <meshStandardMaterial color="yellow" emissive="yellow" />
       </mesh>
 
+      {/* <Sky
+        sunPosition={sunPosition.toArray()}
+        turbidity={8}
+        rayleigh={2}
+        mieCoefficient={0.005}
+        mieDirectionalG={0.8}
+      /> */}
+
       {/* Ground */}
       <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -1, 0]}>
-        <circleGeometry args={[8, 64]} />
+        <circleGeometry args={[10000, 64]} />
         <meshStandardMaterial color="#2f4f2f" side={THREE.DoubleSide} />
       </mesh>
 
@@ -169,7 +178,19 @@ export default function CarbonCycleCanvas() {
       <CurvedArrow from={waterPosition2} to={atmosphere} color="lightblue" label="Ocean Releases CO2" />
       <CurvedArrow from={farmPosition} to={ground} color="saddlebrown" label="Animal Waste Decomposes" />
 
-      <OrbitControls enablePan={false} enableZoom={true} minPolarAngle={0} maxPolarAngle={Math.PI / 2} />
+      <Billboard>
+        <Text position={[0, 3.5, 0]} fontSize={0.5} color="#0077be" anchorX="center" anchorY="middle">
+          Atmosphere
+        </Text>
+      </Billboard>
+
+      <OrbitControls
+        enablePan={false}
+        enableZoom={true}
+        minPolarAngle={0}
+        maxPolarAngle={Math.PI / 2}
+        maxDistance={19}
+      />
     </Canvas>
   );
 }
