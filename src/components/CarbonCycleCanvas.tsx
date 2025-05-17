@@ -6,18 +6,90 @@ import { useEffect, useRef, useState } from "react";
 import * as THREE from "three";
 import { Group } from "three";
 
-export function CowModel({ position = [0, 0, 0] }: { position?: [number, number, number] }) {
+const Fence = ({
+  position = [0, 0, 0],
+  length = 1,
+  rotation = [0, 0, 0],
+}: {
+  position?: [number, number, number];
+  length?: number;
+  rotation?: [number, number, number];
+}) => {
+  const postSpacing = 0.5;
+  const numPosts = Math.floor(length / postSpacing) + 1;
+
+  return (
+    <group position={position} rotation={rotation}>
+      {/* Vertical posts */}
+      {Array.from({ length: numPosts }).map((_, i) => (
+        <mesh key={`post-${i}`} position={[i * postSpacing, 0, 0]}>
+          <boxGeometry args={[0.05, 0.4, 0.05]} />
+          <meshStandardMaterial color="#8B4513" />
+        </mesh>
+      ))}
+
+      {/* Top rail */}
+      <mesh position={[length / 2, 0.2, 0]}>
+        <boxGeometry args={[length, 0.05, 0.05]} />
+        <meshStandardMaterial color="#8B4513" />
+      </mesh>
+
+      {/* Bottom rail */}
+      <mesh position={[length / 2, 0.05, 0]}>
+        <boxGeometry args={[length, 0.05, 0.05]} />
+        <meshStandardMaterial color="#8B4513" />
+      </mesh>
+    </group>
+  );
+};
+
+export function CowModel({ initialPosition = [0, 0, 0] }: { initialPosition?: [number, number, number] }) {
   const { scene } = useGLTF("/models/minecraft_cow.glb");
-  const [cloned, setCloned] = useState<Group | null>(null);
+  const [position, setPosition] = useState<THREE.Vector3>(new THREE.Vector3(...initialPosition));
+  const [direction, setDirection] = useState<THREE.Vector3>(
+    new THREE.Vector3((Math.random() - 0.5) * 0.01, 0, (Math.random() - 0.5) * 0.01)
+  );
+  const groupRef = useRef<Group>(null);
 
   useEffect(() => {
-    const clone = scene.clone(true); // deep clone
-    setCloned(clone);
+    const clone = scene.clone(true);
+    groupRef.current?.add(clone);
   }, [scene]);
 
-  if (!cloned) return null;
+  useFrame(() => {
+    // Move cow
+    position.add(direction);
 
-  return <primitive object={cloned} position={position} scale={0.02} />;
+    // Bounce off boundaries
+    if (position.x < 0.2 || position.x > 2.8) direction.x *= -1;
+    if (position.z < -4.3 || position.z > -1.7) direction.z *= -1;
+
+    // Occasionally change direction randomly
+    if (Math.random() < 0.01) {
+      direction.set((Math.random() - 0.5) * 0.01, 0, (Math.random() - 0.5) * 0.002);
+    }
+
+    // Rotate to face movement direction
+    const angle = Math.atan2(direction.x, direction.z);
+    if (groupRef.current) {
+      groupRef.current.position.copy(position);
+      groupRef.current.rotation.y = angle;
+    }
+  });
+
+  return <group ref={groupRef} scale={0.015} />;
+}
+
+function FarmModel({
+  position = [1.5, -0.88, -5.7],
+  scale = 1,
+}: {
+  position?: [number, number, number];
+  scale?: number;
+}) {
+  const { scene } = useGLTF("/models/farm_low_poly.glb");
+
+  return <primitive object={scene} position={position} scale={scale} />;
 }
 
 function CarbonArrow({ from, to, color = "cyan" }: { from: THREE.Vector3; to: THREE.Vector3; color?: string }) {
@@ -57,15 +129,6 @@ function Cow({ position }: { position: [number, number, number] }) {
         <meshStandardMaterial color="black" />
       </mesh>
     </group>
-  );
-}
-
-function Fence({ position }: { position: [number, number, number] }) {
-  return (
-    <mesh position={position}>
-      <boxGeometry args={[0.05, 0.4, 1]} />
-      <meshStandardMaterial color="#8B4513" />
-    </mesh>
   );
 }
 
@@ -138,35 +201,33 @@ export default function CarbonCycleCanvas() {
         </group>
       ))}
 
+      <FarmModel scale={0.15} />
+
       {/* Farm area */}
       <mesh position={[1.5, -0.99, -3]} rotation={[-Math.PI / 2, 0, 0]}>
         <planeGeometry args={[3, 3]} />
         <meshStandardMaterial color="#d2b48c" />
       </mesh>
 
-      {/* Farm fence */}
-      {[1, 2].map((x, i) => (
-        <Fence key={"fence-x" + i} position={[x, -0.8, 0]} />
-      ))}
-      {[0, 1].map((z, i) => (
-        <Fence key={"fence-z" + i} position={[2, -0.8, z]} />
-      ))}
+      <Fence key={"fence-x"} position={[0, -0.99, -1.5]} length={3} />
+      <Fence key={"fence-x2"} position={[0, -0.99, -1.5]} rotation={[0, 3.14 / 2, 0]} length={4} />
+      <Fence key={"fence-x3"} position={[3, -0.99, -1.5]} rotation={[0, 3.14 / 2, 0]} length={4} />
 
       {/* Cows inside the farm */}
       {[1.2, 1.5, 1.8].map((x, i) => (
         // <Cow key={i} position={[x, -0.85, -3]} />
-        <CowModel key={i} position={[x, -0.7, -3]} />
+        <CowModel key={i} initialPosition={[x, -0.7, -3]} />
       ))}
 
       {/* Arrows */}
-      <CarbonArrow from={sunPosition} to={biosphere} color="orange" />
+      {/* <CarbonArrow from={sunPosition} to={biosphere} color="orange" />
       <CarbonArrow from={atmosphere} to={biosphere} color="lime" />
       <CarbonArrow from={biosphere} to={atmosphere} color="gray" />
       <CarbonArrow from={atmosphere} to={hydrosphere} color="blue" />
-      <CarbonArrow from={geosphere} to={atmosphere} color="red" />
+      <CarbonArrow from={geosphere} to={atmosphere} color="red" /> */}
 
       {/* Labels */}
-      <Text position={atmosphere} fontSize={0.3} color="#f87171">
+      {/* <Text position={atmosphere} fontSize={0.3} color="#f87171">
         Atmosphere
       </Text>
       <Text position={biosphere} fontSize={0.3} color="green">
@@ -180,7 +241,7 @@ export default function CarbonCycleCanvas() {
       </Text>
       <Text position={sunPosition.clone().add(new THREE.Vector3(0, 0.7, 0))} fontSize={0.3} color="orange">
         Sun
-      </Text>
+      </Text> */}
 
       {/* <OrbitControls enablePan={false} enableZoom={true} /> */}
       <OrbitControls
@@ -196,3 +257,4 @@ export default function CarbonCycleCanvas() {
 }
 
 useGLTF.preload("/models/minecraft_cow.glb");
+useGLTF.preload("/models/farm_low_poly.glb");
