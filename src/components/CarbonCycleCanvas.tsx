@@ -1,7 +1,7 @@
 "use client";
 
 import { Canvas, useFrame } from "@react-three/fiber";
-import { OrbitControls, Text, useGLTF, Line, Billboard } from "@react-three/drei";
+import { OrbitControls, Text, useGLTF, Line } from "@react-three/drei";
 import { useRef, useState } from "react";
 import * as THREE from "three";
 import { Group } from "three";
@@ -33,8 +33,15 @@ function CurvedArrow({
   const [hovered, setHovered] = useState(false);
   const groupRef = useRef<THREE.Group>(null);
 
+  const arrowPosition = curve.getPoint(0.5);
+  const lookAtPoint = curve.getPoint(0.6);
+  const direction = new THREE.Vector3().subVectors(lookAtPoint, arrowPosition).normalize();
+
+  const arrowQuaternion = new THREE.Quaternion();
+  arrowQuaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), direction);
+
   useFrame(({ camera }) => {
-    if (hovered && groupRef.current) {
+    if (groupRef.current && hovered) {
       groupRef.current.lookAt(camera.position);
     }
   });
@@ -46,11 +53,18 @@ function CurvedArrow({
         points={points}
         color={color}
         lineWidth={2}
+        dashed={false}
         onPointerOver={() => setHovered(true)}
         onPointerOut={() => setHovered(false)}
       />
+
+      <mesh position={arrowPosition} quaternion={arrowQuaternion}>
+        <coneGeometry args={[0.1, 0.3, 8]} />
+        <meshStandardMaterial color={color} />
+      </mesh>
+
       {hovered && label && (
-        <group ref={groupRef} position={curve.getPoint(0.5).clone().add(new THREE.Vector3(0, -0.7, 0))}>
+        <group ref={groupRef} position={curve.getPoint(0.5).clone().add(new THREE.Vector3(0, -0.5, 0))}>
           {label.split(/\n|\n/).map((line, i, arr) => (
             <Text
               key={i}
@@ -76,7 +90,7 @@ export default function CarbonCycleCanvas() {
   const waterPosition = new THREE.Vector3(-4, -0.99, 3);
   const waterPosition2 = new THREE.Vector3(-3, -0.99, 2);
   const factoryPosition = new THREE.Vector3(5, -0.9, 2.5);
-  const atmosphere = new THREE.Vector3(0, 4, 0);
+  const atmosphere = new THREE.Vector3(0, 2.5, 0);
   const ground = new THREE.Vector3(0, -1, 0);
 
   return (
@@ -152,7 +166,7 @@ export default function CarbonCycleCanvas() {
       {/* Additional Arrows for Completion */}
       <CurvedArrow from={forestPosition} to={ground} color="brown" label="Dead Plants Decompose into Soil" />
       <CurvedArrow from={ground} to={atmosphere} color="#444" label="Decomposition Releases CO2" />
-      <CurvedArrow from={waterPosition2} to={atmosphere} color="darkblue" label="Ocean Releases CO2" />
+      <CurvedArrow from={waterPosition2} to={atmosphere} color="lightblue" label="Ocean Releases CO2" />
       <CurvedArrow from={farmPosition} to={ground} color="saddlebrown" label="Animal Waste Decomposes" />
 
       <OrbitControls enablePan={false} enableZoom={true} minPolarAngle={0} maxPolarAngle={Math.PI / 2} />
