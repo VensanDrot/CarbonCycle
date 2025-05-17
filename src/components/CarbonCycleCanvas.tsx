@@ -87,11 +87,11 @@ function CurvedArrow({
 export default function CarbonCycleCanvas() {
   const sunPosition = new THREE.Vector3(-5, 5, 0);
   const forestPosition = new THREE.Vector3(-4, -0.88, -2.7);
-  const volcanoPosition = new THREE.Vector3(9, -0.88, -5);
+  const volcanoPosition = new THREE.Vector3(13, -0.88, -9);
   const farmPosition = new THREE.Vector3(1.5, -0.88, -3);
   const waterPosition = new THREE.Vector3(-4, -0.99, 3);
-  const waterPosition2 = new THREE.Vector3(-3, -0.99, 2);
-  const factoryPosition = new THREE.Vector3(5, -0.9, 2.5);
+  const waterPosition2 = new THREE.Vector3(-6, -0.99, 2);
+  const factoryPosition = new THREE.Vector3(7, -0.9, 4);
   const atmosphere = new THREE.Vector3(0, 2.5, 0);
   const ground = new THREE.Vector3(0, -0.98, 0);
 
@@ -158,33 +158,33 @@ export default function CarbonCycleCanvas() {
         </mesh>
 
         {/* ocean */}
-        <mesh position={waterPosition} rotation={[-Math.PI / 2, 0, 0]}>
+        {/* <mesh position={waterPosition} rotation={[-Math.PI / 2, 0, 0]}>
           <circleGeometry args={[2, 32]} />
           <meshStandardMaterial color="#1ca3ec" transparent opacity={0.8} />
-        </mesh>
+        </mesh> */}
 
         {/* Expanded ocean as polygon still deciding if i need to keep it or remove */}
-        {/* <mesh position={[0, -0.9, -10]} rotation={[-Math.PI / 2, 0, 0]}>
-        <shapeGeometry
-          args={[
-            (function () {
-              const shape = new THREE.Shape();
-              shape.moveTo(0, -15);
-              shape.lineTo(-80000, 30000);
-              shape.lineTo(-30, -1000000);
+        <mesh position={[0, -0.99, -10]} rotation={[-Math.PI / 2, 0, 0]}>
+          <shapeGeometry
+            args={[
+              (function () {
+                const shape = new THREE.Shape();
+                shape.moveTo(2, -15);
+                shape.lineTo(-60000, 30000);
+                shape.lineTo(-30, -1000000);
 
-              return shape;
-            })(),
-          ]}
-        />
-        <meshStandardMaterial color="#1ca3ec" transparent opacity={0.75} />
-      </mesh> */}
+                return shape;
+              })(),
+            ]}
+          />
+          <meshStandardMaterial color="#1ca3ec" transparent opacity={0.75} />
+        </mesh>
 
         {/* Volcano */}
-        <VolcanoModel scale={5} position={volcanoPosition?.toArray()} rotation={[0, 3.14 / 1.75, 0]} />
+        <VolcanoModel scale={7.5} position={volcanoPosition?.toArray()} rotation={[0, 3.14 / 1.75, 0]} />
 
         {/* imported models */}
-        <FactoryModel scale={0.23} position={factoryPosition.toArray()} rotation={[0, 3.14 / 1.05, 0]} />
+        <FactoryModel scale={0.43} position={factoryPosition.toArray()} rotation={[0, 3.14 / 1.05, 0]} />
         <ForestModel scale={0.23} position={forestPosition.toArray()} />
         <FarmModel scale={0.15} />
 
