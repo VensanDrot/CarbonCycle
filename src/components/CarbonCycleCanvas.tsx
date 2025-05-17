@@ -34,7 +34,7 @@ function CurvedArrow({
   const groupRef = useRef<THREE.Group>(null);
 
   useFrame(({ camera }) => {
-    if (groupRef.current) {
+    if (hovered && groupRef.current) {
       groupRef.current.lookAt(camera.position);
     }
   });
@@ -50,7 +50,7 @@ function CurvedArrow({
         onPointerOut={() => setHovered(false)}
       />
       {hovered && label && (
-        <group ref={groupRef} position={curve.getPoint(0.5).clone().add(new THREE.Vector3(0, -0.5, 0))}>
+        <group ref={groupRef} position={curve.getPoint(0.5).clone().add(new THREE.Vector3(0, -0.7, 0))}>
           {label.split(/\\n|\n/).map((line, i, arr) => (
             <Text
               key={i}
@@ -137,14 +137,14 @@ export default function CarbonCycleCanvas() {
         color="orange"
         label={"Photosynthesis\n(Energy transferred from Sun to Plants)"}
       />
-      <CurvedArrow from={atmosphere} to={forestPosition} color="green" label="CO₂ gets absorbed by Plants" />
+      <CurvedArrow from={atmosphere} to={forestPosition} color="green" label="CO2 gets absorbed by Plants" />
       <CurvedArrow from={farmPosition} to={atmosphere} color="gray" label="Plant & Animal Respiration" />
-      <CurvedArrow from={atmosphere} to={waterPosition} color="blue" label="Ocean absorbs CO₂" />
+      <CurvedArrow from={atmosphere} to={waterPosition} color="blue" label="Ocean absorbs CO2" />
       <CurvedArrow
         from={factoryPosition}
         to={atmosphere}
         color="red"
-        label="Factory Emissions (Fossil Fuels and CO₂)"
+        label="Factory Emissions (Fossil Fuels and CO2)"
       />
 
       <OrbitControls enablePan={false} enableZoom={true} minPolarAngle={0} maxPolarAngle={Math.PI / 2} />
